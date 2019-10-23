@@ -1,0 +1,5 @@
+language: rust
+rust:
+  - nightly
+os: osx
+osx_image: xcode11.2
