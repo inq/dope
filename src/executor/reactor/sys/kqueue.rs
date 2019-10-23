@@ -101,6 +101,17 @@ impl Kqueue {
         )
     }
 
+    pub fn add_signal(&mut self, signal: i32, key: reactor::Key) -> Result<(), failure::Error> {
+        self.manage_event(
+            signal as usize,
+            libc::EVFILT_SIGNAL,
+            libc::EV_ADD | libc::EV_ENABLE,
+            0,
+            0,
+            key.inner(),
+        )
+    }
+
     fn fetch_events(&mut self) -> Result<(), Error> {
         unsafe {
             let res = libc::kevent(

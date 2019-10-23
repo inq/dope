@@ -105,6 +105,17 @@ impl Handle {
         Poll::Pending
     }
 
+    pub fn add_signal(&self, signal: i32) -> Key {
+        if let Some(inner) = self.inner.upgrade() {
+            let mut borrowed = inner.borrow_mut();
+            let key = borrowed.insert(None);
+            borrowed.kqueue.add_signal(signal, key).unwrap();
+            key
+        } else {
+            unreachable!()
+        }
+    }
+
     pub fn add_timer(&self, duration: chrono::Duration, repeat: bool) -> Key {
         if let Some(inner) = self.inner.upgrade() {
             let ident_offset = 0x1000;
