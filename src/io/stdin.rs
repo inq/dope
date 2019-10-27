@@ -1,4 +1,4 @@
-use futures::io::AsyncRead;
+use futures::io::{AsyncRead, BufReader};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -15,7 +15,7 @@ pub struct Stdin {
     register: reactor::Register,
 }
 
-pub fn stdin(reactor: reactor::Handle) -> Result<Stdin, failure::Error> {
+pub fn stdin(reactor: reactor::Handle) -> Result<BufReader<Stdin>, failure::Error> {
     unsafe {
         let prev = libc::fcntl(libc::STDIN_FILENO, libc::F_GETFL);
         if prev < 0 {
@@ -23,10 +23,10 @@ pub fn stdin(reactor: reactor::Handle) -> Result<Stdin, failure::Error> {
         }
         libc::fcntl(libc::STDIN_FILENO, libc::F_SETFL, prev | libc::O_NONBLOCK);
     }
-    Ok(Stdin {
+    Ok(BufReader::new(Stdin {
         inner: std::io::stdin(),
         register: reactor::Register::new(reactor),
-    })
+    }))
 }
 
 impl AsyncRead for Stdin {
