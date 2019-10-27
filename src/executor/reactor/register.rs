@@ -17,11 +17,27 @@ impl Register {
         self.reactor.clone()
     }
 
-    pub fn register(&mut self, cx: &mut Context<'_>, fd: RawFd) -> Result<(), failure::Error> {
+    pub fn register_read(&mut self, cx: &mut Context<'_>, fd: RawFd) -> Result<(), failure::Error> {
+        // TODO: Merge with write
         match self.key {
             Some(key) => self.reactor.set_context(key, cx),
             None => {
-                let key = self.reactor.register_fd(cx, fd)?;
+                let key = self.reactor.register_fd_read(cx, fd)?;
+                self.key.replace(key);
+                Ok(())
+            }
+        }
+    }
+
+    pub fn register_write(
+        &mut self,
+        cx: &mut Context<'_>,
+        fd: RawFd,
+    ) -> Result<(), failure::Error> {
+        match self.key {
+            Some(key) => self.reactor.set_context(key, cx),
+            None => {
+                let key = self.reactor.register_fd_write(cx, fd)?;
                 self.key.replace(key);
                 Ok(())
             }

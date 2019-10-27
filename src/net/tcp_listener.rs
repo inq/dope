@@ -51,7 +51,7 @@ impl TcpListener {
             Ok(pair) => pair,
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 let fd = self.inner.as_raw_fd();
-                self.register.register(cx, fd)?;
+                self.register.register_read(cx, fd)?;
                 return Poll::Pending;
             }
             Err(e) => return Poll::Ready(Err(failure::Error::from(e))),

@@ -140,13 +140,27 @@ impl Handle {
         }
     }
 
-    pub fn register_fd(&self, cx: &Context<'_>, fd: RawFd) -> Result<Key, failure::Error> {
-        log::warn!("register_fd: {:?}", fd);
+    pub fn register_fd_read(&self, cx: &Context<'_>, fd: RawFd) -> Result<Key, failure::Error> {
+        // TODO: Merge with write
+        log::warn!("register_fd_read: {:?}", fd);
         if let Some(inner) = self.inner.upgrade() {
             let mut borrowed = inner.borrow_mut();
             let key = borrowed.insert(Some(cx.waker().clone()));
-            borrowed.kqueue.add_fd(fd.try_into()?, key)?;
-            log::info!("ADDED: key {:?}, fd {}", key, fd);
+            borrowed.kqueue.add_fd_read(fd.try_into()?, key)?;
+            log::info!("ADDED(READ): key {:?}, fd {}", key, fd);
+            Ok(key)
+        } else {
+            unreachable!();
+        }
+    }
+
+    pub fn register_fd_write(&self, cx: &Context<'_>, fd: RawFd) -> Result<Key, failure::Error> {
+        log::warn!("register_fd_write: {:?}", fd);
+        if let Some(inner) = self.inner.upgrade() {
+            let mut borrowed = inner.borrow_mut();
+            let key = borrowed.insert(Some(cx.waker().clone()));
+            borrowed.kqueue.add_fd_write(fd.try_into()?, key)?;
+            log::info!("ADDED(WRITE): key {:?}, fd {}", key, fd);
             Ok(key)
         } else {
             unreachable!();

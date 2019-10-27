@@ -25,7 +25,9 @@ impl Dispatcher {
             waker.wake();
             Ok(())
         } else {
-            Err(Error::NoWaker.into())
+            // TODO: Waker for writer
+            Ok(())
+            // Err(Error::NoWaker.into())
         }
     }
 

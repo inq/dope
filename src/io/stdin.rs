@@ -42,7 +42,7 @@ impl AsyncRead for Stdin {
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 log::warn!("WouldBlock");
                 let fd = libc::STDIN_FILENO;
-                self.register.register(cx, fd).unwrap();
+                self.register.register_read(cx, fd).unwrap();
                 Poll::Pending
             }
             etc => Poll::Ready(etc),

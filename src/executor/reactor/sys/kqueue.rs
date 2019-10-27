@@ -62,10 +62,21 @@ impl Kqueue {
         }
     }
 
-    pub fn add_fd(&mut self, fd: usize, key: reactor::Key) -> Result<(), failure::Error> {
+    pub fn add_fd_read(&mut self, fd: usize, key: reactor::Key) -> Result<(), failure::Error> {
         self.manage_event(
             fd,
             libc::EVFILT_READ,
+            libc::EV_ADD | libc::EV_ENABLE,
+            0,
+            0,
+            key.inner(),
+        )
+    }
+
+    pub fn add_fd_write(&mut self, fd: usize, key: reactor::Key) -> Result<(), failure::Error> {
+        self.manage_event(
+            fd,
+            libc::EVFILT_WRITE,
             libc::EV_ADD | libc::EV_ENABLE,
             0,
             0,
