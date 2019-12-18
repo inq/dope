@@ -7,8 +7,8 @@ async fn test_timer_inner(executor: executor::Handle) -> Result<Vec<i32>, failur
     use futures::StreamExt;
 
     let reactor = executor.reactor()?;
-    let stream1 = Timer::start(reactor.clone(), Duration::milliseconds(200))?.map(|()| 1i32);
-    let stream2 = Timer::start(reactor.clone(), Duration::milliseconds(550))?.map(|()| 2i32);
+    let stream1 = Timer::start(reactor.clone(), Duration::milliseconds(500))?.map(|()| 1i32);
+    let stream2 = Timer::start(reactor.clone(), Duration::milliseconds(1375))?.map(|()| 2i32);
 
     Ok(futures::stream::select(stream1, stream2)
         .take(10)

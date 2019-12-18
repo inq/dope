@@ -1,4 +1,4 @@
-#![feature(try_trait, weak_counts)]
+#![feature(try_trait)]
 
 #[macro_use]
 extern crate log;
