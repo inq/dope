@@ -6,16 +6,24 @@ pub enum Error {
     NoWaker,
 }
 
+#[derive(PartialEq)]
+pub enum WakerOption {
+    NeedWaker,
+    None,
+}
+
 pub struct Dispatcher {
     available: bool,
     waker: Option<Waker>,
+    waker_option: WakerOption,
 }
 
 impl Dispatcher {
-    pub fn new(waker: Option<Waker>) -> Self {
+    pub fn new(waker: Option<Waker>, waker_option: WakerOption) -> Self {
         Self {
             available: false,
             waker,
+            waker_option,
         }
     }
 
@@ -24,10 +32,10 @@ impl Dispatcher {
         if let Some(waker) = self.waker.take() {
             waker.wake();
             Ok(())
-        } else {
-            // TODO: Waker for writer
+        } else if self.waker_option != WakerOption::NeedWaker {
             Ok(())
-            // Err(Error::NoWaker.into())
+        } else {
+            Err(Error::NoWaker.into())
         }
     }
 

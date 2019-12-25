@@ -11,7 +11,7 @@ use sys::Kqueue;
 
 use slab::Slab;
 
-pub use dispatcher::{Dispatcher, Key};
+pub use dispatcher::{Dispatcher, Key, WakerOption};
 pub use register::Register;
 
 pub struct Reactor {
@@ -29,9 +29,12 @@ struct Inner {
 }
 
 impl Inner {
-    fn insert(&mut self, waker: Option<Waker>) -> Key {
+    fn insert(&mut self, waker: Option<Waker>, waker_option: WakerOption) -> Key {
         let has_waker = waker.is_some();
-        let res = Key::from(self.dispatchers.insert(Dispatcher::new(waker)));
+        let res = Key::from(
+            self.dispatchers
+                .insert(Dispatcher::new(waker, waker_option)),
+        );
         log::info!("insert: {:?}, waker: {}", res, has_waker);
         res
     }
@@ -108,7 +111,7 @@ impl Handle {
     pub fn add_signal(&self, signal: i32) -> Key {
         if let Some(inner) = self.inner.upgrade() {
             let mut borrowed = inner.borrow_mut();
-            let key = borrowed.insert(None);
+            let key = borrowed.insert(None, WakerOption::NeedWaker);
             borrowed.kqueue.add_signal(signal, key).unwrap();
             key
         } else {
@@ -121,7 +124,8 @@ impl Handle {
             let ident_offset = 0x1000;
 
             let mut borrowed = inner.borrow_mut();
-            let key = borrowed.insert(None);
+            // TODO: Release from kqueue after use
+            let key = borrowed.insert(None, WakerOption::None);
             borrowed
                 .kqueue
                 .add_timer(key.inner() + ident_offset, duration, key, repeat)
@@ -145,7 +149,7 @@ impl Handle {
         log::warn!("register_fd_read: {:?}", fd);
         if let Some(inner) = self.inner.upgrade() {
             let mut borrowed = inner.borrow_mut();
-            let key = borrowed.insert(Some(cx.waker().clone()));
+            let key = borrowed.insert(Some(cx.waker().clone()), WakerOption::NeedWaker);
             borrowed.kqueue.add_fd_read(fd.try_into()?, key)?;
             log::info!("ADDED(READ): key {:?}, fd {}", key, fd);
             Ok(key)
@@ -158,7 +162,8 @@ impl Handle {
         log::warn!("register_fd_write: {:?}", fd);
         if let Some(inner) = self.inner.upgrade() {
             let mut borrowed = inner.borrow_mut();
-            let key = borrowed.insert(Some(cx.waker().clone()));
+            // TODO: Does write need waker?`
+            let key = borrowed.insert(Some(cx.waker().clone()), WakerOption::None);
             borrowed.kqueue.add_fd_write(fd.try_into()?, key)?;
             log::info!("ADDED(WRITE): key {:?}, fd {}", key, fd);
             Ok(key)

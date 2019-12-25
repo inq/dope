@@ -5,6 +5,7 @@ use crate::executor::reactor;
 
 pub struct Register {
     reactor: reactor::Handle,
+    // Run first (None), and register later (Some).
     key: Option<reactor::Key>,
 }
 

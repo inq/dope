@@ -84,8 +84,8 @@ mod waker {
     pub(super) unsafe fn clone(data: *const ()) -> RawWaker {
         let rc: Rc<Inner> = Rc::from_raw(data as *const super::Inner);
         let cloned = rc.clone();
-        log::warn!(
-            "waker::clone ({}, {})",
+        log::debug!(
+            "waker::clone (S{}, W{})",
             Rc::strong_count(&rc),
             Rc::weak_count(&rc)
         );
@@ -97,18 +97,18 @@ mod waker {
     }
 
     pub(super) unsafe fn wake(data: *const ()) {
-        log::warn!("waker::wake");
+        log::debug!("waker::wake");
         let _rc: Rc<Inner> = Rc::from_raw(data as *const Inner);
     }
 
     pub(super) unsafe fn wake_by_ref(data: *const ()) {
-        log::warn!("waker::wake_by_ref");
+        log::debug!("waker::wake_by_ref");
         let rc: Rc<Inner> = Rc::from_raw(data as *const Inner);
         std::mem::forget(rc);
     }
 
     pub(super) unsafe fn drop(data: *const ()) {
-        log::warn!("waker::drop");
+        log::debug!("waker::drop");
         std::mem::drop(Rc::<Inner>::from_raw(data as *const Inner));
     }
 }

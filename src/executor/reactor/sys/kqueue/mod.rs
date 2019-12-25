@@ -1,3 +1,5 @@
+mod kevent;
+
 use crate::executor::reactor;
 use libc;
 use std::os::unix::io::RawFd;
@@ -143,15 +145,19 @@ impl Kqueue {
     }
 
     pub fn poll(&mut self) -> Vec<reactor::Key> {
+        use num_traits::FromPrimitive;
+
         self.fetch_events().unwrap();
         self.events
             .iter()
             .map(|e| {
+                let filter = e.filter;
                 debug!(
-                    "polling: {} ident: {} {} data: {} udata: {} fflags: {}",
+                    "polling: {} ident: {} filter: {} {:?} data: {} udata: {} fflags: {}",
                     e.flags & libc::EV_EOF,
                     e.ident as i32,
-                    e.filter == libc::EVFILT_READ,
+                    filter,
+                    kevent::Filter::from_i16(filter as i16),
                     e.data as i32,
                     e.udata as i32,
                     e.fflags as i32,
