@@ -1,4 +1,4 @@
-use futures::io::{AsyncWrite, BufWriter};
+use futures::io::AsyncWrite;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -9,12 +9,11 @@ pub struct Stdout {
     register: reactor::Register,
 }
 
-pub fn stdout(reactor: reactor::Handle) -> Result<BufWriter<Stdout>, failure::Error> {
-    log::info!("stdout!");
-    Ok(BufWriter::new(Stdout {
+pub fn stdout(reactor: reactor::Handle) -> Result<Stdout, failure::Error> {
+    Ok(Stdout {
         inner: std::io::stdout(),
         register: reactor::Register::new(reactor),
-    }))
+    })
 }
 
 impl AsyncWrite for Stdout {
