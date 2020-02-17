@@ -1,7 +1,6 @@
 mod kevent;
 
 use crate::executor::reactor;
-use libc;
 use std::os::unix::io::RawFd;
 
 #[derive(Debug, Fail)]
@@ -79,7 +78,7 @@ impl Kqueue {
         self.manage_event(
             fd,
             libc::EVFILT_WRITE,
-            libc::EV_ADD | libc::EV_ENABLE,
+            libc::EV_ADD | libc::EV_ENABLE | libc::EV_CLEAR,
             0,
             0,
             key.inner(),
